@@ -22,6 +22,10 @@ class Scraper {
     const westPrice = await this.getPriceForRegion(WEST_REGION)
 
     console.log(eastPrice, westPrice)
+    return {
+      eastPrice,
+      westPrice
+    }
   }
 
   async getPriceForRegion(region) {
