@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer')
+const { sleep } = require('./utils/sleep')
 
 const EAST_REGION = 'VestØstØst'
 const WEST_REGION = 'VestØstVest'
@@ -49,6 +50,7 @@ class Scraper {
     const price = Number(danishDecimalPrice.replace(',', '.'))
 
     if (isNaN(price)) {
+      await sleep(100)
       return this.getPriceWithRetry()
     } else {
       return price

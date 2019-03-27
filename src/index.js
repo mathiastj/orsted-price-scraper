@@ -1,13 +1,13 @@
 const express = require('express')
 const cors = require('cors')
 const PORT = process.env.PORT || 5000
-// const { Pool } = require('pg')
+const { Pool } = require('pg')
 const Scraper = require('./scraper')
 
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: true
-// })
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: true
+})
 
 const app = express()
 app.use(
@@ -34,10 +34,23 @@ app.use(
 
 app.get('/scrape', async (req, res) => {
   res.setHeader('Content-Type', 'application/json')
-  const scraper = new Scraper()
-  const prices = await scraper.scrape()
+  const client = await pool.connect()
+  try {
+    const scraper = new Scraper()
+    const prices = await scraper.scrape()
 
-  res.send(prices)
+    await client.query('insert into prices (price_east, price_west) values ($1, $2)', [
+      prices.eastPrice,
+      prices.westPrice
+    ])
+
+    res.send(prices)
+  } catch (err) {
+    console.error({ stack: err.stack, msg: err.message })
+    res.send([])
+  } finally {
+    client.release()
+  }
 })
 
 const server = app.listen(PORT, () => {
