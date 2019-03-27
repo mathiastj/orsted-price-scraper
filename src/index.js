@@ -47,7 +47,10 @@ app.get('/scrape', async (req, res) => {
     res.send(prices)
   } catch (err) {
     console.error({ stack: err.stack, msg: err.message })
-    res.send([])
+    client.release()
+    // Puppeteer likely encountered an error that cannot be resolved, restart the server
+    server.close()
+    process.exit(1)
   } finally {
     client.release()
   }
