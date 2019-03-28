@@ -39,6 +39,7 @@ class Scraper {
       return this.getPriceWithRetry()
     } else {
       await sliderContainer.click()
+      await sleep(250)
       return this.getPriceWithRetry()
     }
   }

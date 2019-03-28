@@ -17,25 +17,37 @@ app.use(
   })
 )
 
-// app.get('/prices', async (req, res) => {
-//   res.setHeader('Content-Type', 'application/json')
-//   const client = await pool.connect()
-//   try {
-//     const results = []
-
-//     res.send(results)
-//   } catch (err) {
-//     console.error({ stack: err.stack, msg: err.message })
-//     res.send([])
-//   } finally {
-//     client.release()
-//   }
-// })
+app.get('/prices', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+  const client = await pool.connect()
+  try {
+    const prices = await client.query(
+      'select max(price_east) as price_east, max(price_west) as price_west, date(created_at) from prices group by date(created_at);'
+    )
+    res.send(prices.rows)
+  } catch (err) {
+    console.error({ stack: err.stack, msg: err.message })
+    res.send([])
+  } finally {
+    client.release()
+  }
+})
 
 app.get('/scrape', async (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const client = await pool.connect()
   try {
+    const lastFetch = await client.query(
+      'select price_east, price_west, created_at from prices order by prices.created_at desc limit 1;'
+    )
+    const now = new Date()
+    const tenHoursInMilliseconds = 1000 * 60 * 60 * 10
+    const tenHoursAgo = now.setTime(now.getTime() - tenHoursInMilliseconds)
+    // Only scrape if it has been at least 10 hours since last scrape, otherwise return latest results
+    if (!(lastFetch.rows[0].created_at.getTime() < tenHoursAgo)) {
+      return res.send({ eastPrice: lastFetch.rows[0].price_east, westPrice: lastFetch.rows[0].price_west })
+    }
+
     const scraper = new Scraper()
     const prices = await scraper.scrape()
 
