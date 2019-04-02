@@ -19,13 +19,15 @@ class Scraper {
 
     this.page.goto(this.endpoint)
 
-    const eastPrice = await this.getPriceForRegion(EAST_REGION)
-    const westPrice = await this.getPriceForRegion(WEST_REGION)
+    const eastPrices = await this.getPriceForRegion(EAST_REGION)
+    const westPrices = await this.getPriceForRegion(WEST_REGION)
 
-    console.log(eastPrice, westPrice)
+    console.log(eastPrices, westPrices)
     return {
-      eastPrice,
-      westPrice
+      eastFixedPrice: eastPrices.fixedPrice,
+      westFixedPrice: westPrices.fixedPrice,
+      eastVariablePrice: eastPrices.variablePrice,
+      westVariablePrice: westPrices.variablePrice
     }
   }
 
@@ -46,15 +48,19 @@ class Scraper {
 
   // The price is not loaded at the same time as the page but once it's loaded both values are there
   async getPriceWithRetry() {
-    const priceSpan = await this.page.waitForXPath('//*[@id="o-price-value-fixed"]')
-    const danishDecimalPrice = await this.page.evaluate(element => element.textContent, priceSpan)
-    const price = Number(danishDecimalPrice.replace(',', '.'))
+    const fixedPriceSpan = await this.page.waitForXPath('//*[@id="o-price-value-fixed"]')
+    const fixedDanishDecimalPrice = await this.page.evaluate(element => element.textContent, fixedPriceSpan)
+    const fixedPrice = Number(fixedDanishDecimalPrice.replace(',', '.'))
 
-    if (isNaN(price)) {
+    const variablePriceSpan = await this.page.waitForXPath('//*[@id="o-price-value-variable"]')
+    const variableDanishDecimalPrice = await this.page.evaluate(element => element.textContent, variablePriceSpan)
+    const variablePrice = Number(variableDanishDecimalPrice.replace(',', '.'))
+
+    if (isNaN(fixedPrice) || isNaN(variablePrice)) {
       await sleep(100)
       return this.getPriceWithRetry()
     } else {
-      return price
+      return { fixedPrice, variablePrice }
     }
   }
 }
