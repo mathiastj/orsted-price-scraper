@@ -32,12 +32,14 @@ class Scraper {
   }
 
   async getPriceForRegion(region) {
-    const sliderContainer = await this.page.waitForXPath('//*[@id="o-geo-slide-fast-containter"]')
-    // console.log(sliderContainer)
-    const text = await this.page.evaluate(element => element.textContent, sliderContainer)
-    const noSpacedText = text.replace(/\s*/g, '')
+    const sliderContainer = await this.page.waitForXPath('//*[@id="o-geo-slide-containter"]')
 
-    if (noSpacedText === region) {
+    const sliderLeft = await this.page.$('.o-geo-knot left')
+
+    // When sliderLeft exists we are at WEST_REGION
+    if (region === WEST_REGION && sliderLeft) {
+      return this.getPriceWithRetry()
+    } else if (region === EAST_REGION && !sliderLeft) {
       return this.getPriceWithRetry()
     } else {
       await sliderContainer.click()
@@ -48,20 +50,24 @@ class Scraper {
 
   // The price is not loaded at the same time as the page but once it's loaded both values are there
   async getPriceWithRetry() {
-    const fixedPriceSpan = await this.page.waitForXPath('//*[@id="o-price-value-fixed"]')
-    const fixedDanishDecimalPrice = await this.page.evaluate(element => element.textContent, fixedPriceSpan)
-    const fixedPrice = Number(fixedDanishDecimalPrice.replace(',', '.'))
+    const priceRegex = /\d+,\d+/
 
-    const variablePriceSpan = await this.page.waitForXPath('//*[@id="o-price-value-variable"]')
-    const variableDanishDecimalPrice = await this.page.evaluate(element => element.textContent, variablePriceSpan)
-    const variablePrice = Number(variableDanishDecimalPrice.replace(',', '.'))
+    const fixedPriceDivParent = await this.page.$('[data-id="F12"]')
+    const fixedPriceText = await this.page.evaluate(element => element.innerText, fixedPriceDivParent)
+    const fixedDanishDecimalPriceMatch = fixedPriceText.match(priceRegex)
 
-    if (isNaN(fixedPrice) || isNaN(variablePrice)) {
+    if (!fixedDanishDecimalPriceMatch) {
       await sleep(100)
       return this.getPriceWithRetry()
-    } else {
-      return { fixedPrice, variablePrice }
     }
+    const fixedPrice = Number(fixedDanishDecimalPriceMatch[0].replace(',', '.'))
+
+    const variablePriceSpanDivParent = await this.page.$('[data-id="V"]')
+    const variablePriceText = await this.page.evaluate(element => element.innerText, variablePriceSpanDivParent)
+    const variableDanishDecimalPriceMatch = variablePriceText.match(priceRegex)
+    const variablePrice = Number(variableDanishDecimalPriceMatch[0].replace(',', '.'))
+
+    return { fixedPrice, variablePrice }
   }
 }
 
