@@ -35,6 +35,9 @@ class Scraper {
     const sliderContainer = await this.page.waitForXPath('//*[@id="o-geo-slide-containter"]')
 
     const sliderLeft = await this.page.$('.o-geo-knot left')
+    console.log('slider')
+    console.log(sliderLeft)
+    console.log(`region: ${region}`)
 
     // When sliderLeft exists we are at WEST_REGION
     if (region === WEST_REGION && sliderLeft) {
@@ -43,7 +46,7 @@ class Scraper {
       return this.getPriceWithRetry()
     } else {
       await sliderContainer.click()
-      await sleep(250)
+      await sleep(1000)
       return this.getPriceWithRetry()
     }
   }
