@@ -19,8 +19,8 @@ class Scraper {
 
     this.page.goto(this.endpoint)
 
-    const eastPrices = await this.getPriceForRegion(EAST_REGION)
     const westPrices = await this.getPriceForRegion(WEST_REGION)
+    const eastPrices = await this.getPriceForRegion(EAST_REGION)
 
     console.log(eastPrices, westPrices)
     return {
@@ -34,7 +34,7 @@ class Scraper {
   async getPriceForRegion(region) {
     const sliderContainer = await this.page.waitForXPath('//*[@id="o-geo-slide-containter"]')
 
-    const sliderLeft = await this.page.$('.o-geo-knot left')
+    const sliderLeft = await this.page.$('.o-geo-knot.left')
 
     // When sliderLeft exists we are at WEST_REGION
     if (region === WEST_REGION && sliderLeft) {
