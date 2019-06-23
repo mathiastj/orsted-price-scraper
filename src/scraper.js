@@ -34,6 +34,8 @@ class Scraper {
   async getPriceForRegion(region) {
     const sliderContainer = await this.page.waitForXPath('//*[@id="o-geo-slide-containter"]')
 
+    // Sometimes the slider knot is a little slow at appearing, so wait a while
+    await sleep(300)
     const sliderLeft = await this.page.$('.o-geo-knot.left')
 
     // When sliderLeft exists we are at WEST_REGION
