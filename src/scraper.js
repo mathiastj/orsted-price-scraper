@@ -8,7 +8,7 @@ class Scraper {
   constructor() {
     this.endpoint = 'https://orsted.dk/Privat/Priser/Skift-til-orsted/Koeb-el'
     this.browserConfig = {
-      headless: true,
+      headless: false,
       devtools: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'] // For running on debian in docker
     }
@@ -35,7 +35,7 @@ class Scraper {
     const sliderContainer = await this.page.waitForXPath('//*[@id="o-geo-slide-containter"]')
 
     // Sometimes the slider knot is a little slow at appearing, so wait a while
-    await sleep(300)
+    await sleep(5000)
     const sliderLeft = await this.page.$('.o-geo-knot.left')
 
     // When sliderLeft exists we are at WEST_REGION
