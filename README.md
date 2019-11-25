@@ -1,5 +1,7 @@
 # Ørsted Price Scraper
 
+## Deprecated due to major change in Ørsted pricings and website redesign.
+
 Scrape the electricity prices on https://orsted.dk/Privat/Priser/Skift-til-orsted/Koeb-el daily to make more informed decisions on when to change between variable and static electricity subscriptions.
 
 See the daily prices since 27th March 2019 here: https://lit-tundra-27294.herokuapp.com/prices (Hosted freely on Heroku).
